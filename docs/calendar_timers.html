@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь с таймерами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #F5F5F5;
+            padding: 20px;
+        }
+        .day-container {
+            margin-bottom: 20px;
+            border: 1px solid #F5F5F5;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .day {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .timer {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        input {
+            width: 80%;
+            margin-bottom: 5px;
+            padding: 5px;
+            border: none;
+            border-radius: 4px;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 2px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="calendar"></div>
+    <script>
+        const weekdays = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'];
+        const numberOfTimersPerDay = 3;
+        const calendarContainer = document.getElementById('calendar');
+
+        for (let i = 0; i < weekdays.length; i++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day-container';
+            dayDiv.innerHTML = `
+                <div class="day">${weekdays[i]}</div>
+            `;
+
+            for (let j = 0; j < numberOfTimersPerDay; j++) {
+                dayDiv.innerHTML += `
+                    <input type="text" placeholder="Название таймера ${j + 1}" />
+                    <div class="timer" id="timer${i}-${j}">00:00:00</div>
+                    <button onclick="startTimer(${i}, ${j})">Старт</button>
+                    <button onclick="pauseTimer(${i}, ${j})">Пауза</button>
+                    <button onclick="resetTimer(${i}, ${j})">Сброс</button>
+                `;
+            }
+            calendarContainer.appendChild(dayDiv);
+        }
+
+        let timerIntervals = [];
+        let seconds = [];
+
+        function updateTimer(dayIndex, timerIndex) {
+            const timerDisplay = document.getElementById(`timer${dayIndex}-${timerIndex}`);
+            const hours = Math.floor(seconds[dayIndex][timerIndex] / 3600);
+            const minutes = Math.floor((seconds[dayIndex][timerIndex] % 3600) / 60);
+            const secs = seconds[dayIndex][timerIndex] % 60;
+            timerDisplay.textContent = 
+                String(hours).padStart(2, '0') + ':' + 
+                String(minutes).padStart(2, '0') + ':' + 
+                String(secs).padStart(2, '0');
+        }
+
+        function startTimer(dayIndex, timerIndex) {
+            if (!timerIntervals[dayIndex]) {
+                timerIntervals[dayIndex] = [];
+                seconds[dayIndex] = [];
+            }
+            if (!timerIntervals[dayIndex][timerIndex]) {
+                seconds[dayIndex][timerIndex] = seconds[dayIndex][timerIndex] || 0;
+                timerIntervals[dayIndex][timerIndex] = setInterval(() => {
+                    seconds[dayIndex][timerIndex]++;
+                    updateTimer(dayIndex, timerIndex);
+                }, 1000);
+            }
+        }
+
+        function pauseTimer(dayIndex, timerIndex) {
+            clearInterval(timerIntervals[dayIndex][timerIndex]);
+            timerIntervals[dayIndex][timerIndex] = null;
+        }
+
+        function resetTimer(dayIndex, timerIndex) {
+            clearInterval(timerIntervals[dayIndex][timerIndex]);
+            timerIntervals[dayIndex][timerIndex] = null;
+            seconds[dayIndex][timerIndex] = 0;
+            updateTimer(dayIndex, timerIndex);
+        }
+    </script>
+</body>
+</html>
